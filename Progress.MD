@@ -64,7 +64,11 @@
 
 \- Commit message hygiene noted (his log a bit messy: test/progress.md/upload)
 
-\- TODO git: branches (switch -c / merge), .gitignore, GitHub Issues as bug tracker (→ M9), gh CLI
+\- Branches ✓: switch -c, working dir is repainted per branch (file "gone" = not in main's snapshot; commit lives in .git), merge folds commits in, branch→PR→merge lifecycle ✓
+
+\- Conflicts ✓: overlapping edits to same lines git can't auto-resolve (NOT old-vs-new) ✓
+
+\- M1 GIT effectively DONE (more than basics now). TODO later: .gitignore, GitHub Issues as bug tracker (→ M9), gh CLI
 
 \- RE-QUIZ: 401 vs 403 slipped this session then re-corrected (403 = user7→user8 / normal→admin). Quiz again next open.
 
