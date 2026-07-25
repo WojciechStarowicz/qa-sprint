@@ -1,3 +1,29 @@
+\# ▶ START HERE NEXT SESSION
+
+\*\*Board:\*\* M0 ✓ Docker · M1 ✓ git · M2 ✓ REST/JSON/UUID · M3 ✓ methods · M4 ✓ status codes · M5 ✓ auth — \*\*entire foundation layer closed\*\*
+
+\*\*Next:\*\* \*\*M6 — DevTools\*\* (biggest item on the company's list; Network/Console/Application tabs, the core tester move drilled 10+ times, Copy as cURL, Preserve log, throttling)
+
+\*\*Open the session with these ★ misses (from the 31-question quiz):\*\*
+
+1. \`Authorization: Bearer\` — exact format (was BLANK, had it 2 sessions ago)
+
+2. What the JWT signature proves (said "user logged in" — it's integrity + authenticity)
+
+3. Which method's idempotency depends on payload (said PUT — it's PATCH)
+
+4. Three cookie flags + what each defends against (only recalled Secure)
+
+5. Status codes: 201, 204, 400 vs 422, 429, 502 vs 503 (weakest cluster)
+
+6. \`pull\` = fetch + \*\*merge\*\*, not override
+
+\*\*⚠ NOT STARTED — SQL.\*\* Several days in and the daily 20–30 min hasn't begun. It's the one skill on their list that cannot be crammed. Start SQLBolt immediately, every day, no exceptions.
+
+\*\*Also pending:\*\* \`drill-sheet.md\` — 5 min/day cold recall, cover right column. Chase the PARKED XSS thread during M6.
+
+
+
 \## Covered \& understood
 
 \- Hashing vs encryption (one-way / two-way, salting, why MD5 broken)
@@ -186,6 +212,76 @@
 
 
 
+\## M5 — HTTP auth: COMPLETE
+
+\*\*Unifying frame taught:\*\* HTTP is stateless ⇒ all 5 schemes answer ONE question — how do you prove identity on every request?
+
+\- \*\*Basic auth\*\*: \`Authorization: Basic <base64 user:pass>\` — same header as Bearer, different scheme. base64 = encoding ⇒ plaintext password to anyone sniffing; sends the ACTUAL password every request (not revocable). Legacy/internal tools.
+
+\- \*\*Sessions + cookies\*\*: server stores the session record, cookie carries only the KEY (a locker number, meaningless alone). Browser sends it automatically per-domain.
+
+\- \*\*THE KEY TRADE-OFF (interview favorite)\*\*: session = STATEFUL, state on server, easy instant revocation (delete record), costs storage/lookup + harder to scale. JWT = STATELESS, data inside signed token, scales great, \*\*but cannot be easily revoked\*\* → why expiry times matter.
+
+\- \*\*Cookie flags\*\*: \`HttpOnly\` = JS can't read it → anti-XSS. \`Secure\` = HTTPS only. \`SameSite\` = controls cross-site sending → anti-CSRF.
+
+\- \*\*API keys\*\*: static secret identifying an APP not a user (\`X-API-Key\`). Static/no auto-expiry; in a query param it leaks into server logs + browser history (= a real finding).
+
+\- \*\*OAuth2\*\*: the "Log in with Google" protocol — redirect to the provider, provider issues a scoped token, app never sees your password, access revocable. "Delegated access via tokens, not shared passwords."
+
+\- \*\*Hands-on\*\*: found token in Application/Storage tab, read cookie flags, decoded own JWT payload via base64 (one command, no key — proving signed≠encrypted). Header showed \`alg: RS256\` (asymmetric).
+
+
+
+\## 31-question thorough quiz (day 2, end of session) — RESULTS
+
+\*\*Diagnosis: concepts strong, rote recall weak.\*\* Created \`drill-sheet.md\` for the memorization half. Do NOT keep re-explaining these — drill them.
+
+\*\*Strong ✓\*\*
+
+\- \#7 session vs JWT trade-off — excellent, unprompted (stateless/scales/hijack-prone vs stateful/heavier/safer)
+
+\- \#11 path vs query param, \#17 PUT whole / PATCH partial (FINALLY locked), \#27 in-sync read, \#30 200-with-error-body, \#31 Secure-not-reportable judgment
+
+\- \#9 encoding/encryption/hashing — good reasoning, needed sharpening (no key EXISTS in hashing; server re-hashes and compares)
+
+\- \#25 merge conflict — was RIGHT but talked himself out of it. Confidence issue, not knowledge.
+
+\*\*Conceptually wrong → corrected ✗\*\*
+
+\- \#3 signature = "user logged in" ✗ → integrity + authenticity (role:customer→admin breaks it). ★ re-drill
+
+\- \#18 said PUT depends on payload ✗ → PATCH. Fix taught: PUT = complete final state = always idempotent; PATCH = an instruction = can stack
+
+\- \#24 "pull overrides stuff" ✗ → pull = fetch + MERGE (opposite of override)
+
+\- \#26 thought branch creation moves files to .git ✗ → creates a label at current commit, files untouched
+
+\- \#23 conflated zones with commands → 3 zones (working dir/staging/repo) + 3 commands (add/commit/push)
+
+\*\*Blank / forgotten — pure memorization ★\*\*
+
+\- \#6 \`Authorization: Bearer\` format — BLANK (had it 2 sessions ago). Highest priority drill.
+
+\- \#2 JWT header contents (alg + typ) — blank
+
+\- \#8 cookie flags — only recalled Secure; missing HttpOnly (anti-XSS!) + SameSite (anti-CSRF)
+
+\- \#10 REST frame — blank
+
+\- \#12 six JSON types — 5/6, missing \*\*number\*\*
+
+\- \#15 UUID layout 8-4-4-4-12 — unsure
+
+\- \#16 IDOR — knew the concept, not the name
+
+\- \*\*STATUS CODES = WEAKEST CLUSTER\*\*: \#19 201/204 unsure, \#20 400/422 wrong (cross-wired 422 with the 404/500 path bug), \#21 500/502/503 blank, \#22 429 blank
+
+\*\*Answered his question:\*\* \`data\[0].price.name\` → \`undefined\` in JS (no error); chain one more level → TypeError. Test tools just fail to match.
+
+\*\*Also clarified:\*\* library folder names are canonical per ecosystem, not guesswork (node\_modules / site-packages / vendor)
+
+
+
 \## PARKED — bug threads to chase later
 
 \- \*\*Raw HTML inside product descriptions\*\* (\`<a href=...>\` in /api/Products). If rendered unescaped → injection/XSS vector. Chase in M6/M9.
@@ -201,6 +297,16 @@
 \- \*\*BUG A (correctness) — Unknown API route returns 500 instead of 404\*\* — \`GET /api/ThisDoesNotExist\` → 500. Client error (bad path) answered with server-fault code ⇒ no catch-all route; \`build/routes/angular.js:52\` throws "Unexpected path". Impact: wrong client semantics + false 500 alerts drowning real incidents. Fix: catch-all route returning 404. Severity Medium.
 
 \- \*\*BUG B (security) — Full stack trace exposed in HTTP error response\*\* — same request returns Node/Express trace. Leaks: (1) absolute server paths \`/juice-shop/build/...\`, (2) tech stack = Express/Node, (3) internal module names incl. \`insecurity.js\` \& \`verify.js\`, (4) line numbers → version fingerprinting → CVE lookup. Class: error message containing sensitive info (recon aid, not direct exploit). Fix: suppress verbose errors in prod (\`NODE_ENV=production\` / proper error handler). Severity Medium, priority higher (trivial fix).
+
+\- \*\*JWT has NO \`exp\` claim — token never expires\*\* (payload has \`iat\` only). Combined with JWT being stateless/non-revocable ⇒ a stolen token is valid FOREVER. Severity High.
+
+\- \*\*Token cookie missing \`HttpOnly\`\*\* → readable by JavaScript. Also stored in \*\*localStorage\*\* (always JS-readable). Enables session hijacking via XSS.
+
+\- \*\*\`totpSecret\` included as a token field\*\* — empty on this account, but if 2FA were enabled the 2FA seed itself would ship in the token ⇒ stealing the token also defeats two-factor. Design flaw.
+
+\- \*\*NOT a bug (judgment practice):\*\* \`Secure: false\` on \`http://localhost\` — Secure means "HTTPS only" and there's no HTTPS locally. Would be a finding in production; reporting it here = noise. \*Taught: knowing what NOT to report protects credibility.\*
+
+\- \*\*ATTACK CHAIN assembled\*\* (ties the whole day together): stored HTML/XSS in product description → script runs in victim browser → reads token from localStorage / non-HttpOnly cookie → exfiltrates → attacker replays token = full account takeover, no password, nothing in failed-login logs. Worse: no \`exp\` = works forever; payload MD5 hash → crack offline → password reuse elsewhere.
 
 \- \*\*Filed as TWO bugs deliberately\*\* — different root causes, different fixes, different owners. Could fix the 404 and still leak traces elsewhere. (Taught: remediation-thinking vs symptom-listing.)
 

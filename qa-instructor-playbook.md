@@ -154,7 +154,7 @@ Rule of thumb if time runs short (his priority order): **M6 DevTools > M3/M4 HTT
 
 ---
 
-## M5 — HTTP auth  ◐
+## M5 — HTTP auth  ✓ DONE
 **Prereqs:** M2, M4 (401/403).
 **Teach:** Basic auth (base64 user:pass, legacy, insecure sans HTTPS); **Bearer tokens / JWT** (`Authorization: Bearer eyJ...`, header.payload.signature, base64 = readable, *signed not encrypted*); cookies + sessions (server-side state, cookie is the key; HttpOnly/Secure flags); API keys (static secret in header/query); OAuth2 (one paragraph: the protocol behind Login-with-Google; app gets a token, never sees your password). Tie-back: this is *why* 401 vs 403 exists and what you watch in the Network tab.
 **Status:** Hashing vs encryption ✓, JWT structure ✓ (header = alg metadata, payload = claims, signature = server-secret proof), Bearer flow ✓, `Authorization: Bearer` header format ✓, salting/rainbow tables ✓. *To cover: cookies/sessions + HttpOnly/Secure, API keys, OAuth2 one-paragraph, Basic auth.*
@@ -258,10 +258,15 @@ Weight toward *last session* + one older callback. Mark ✓ when answered cleanl
 
 **HTTP/methods:** idempotency incl. PATCH-depends-on-payload ✓ · PUT vs PATCH ✓ · double-charge = POST ✓
 **Status codes:** 401 vs 403 (identity/permission) ✓ · 4xx vs 5xx ✓ · 201 vs 204 ☐ · 429 ☐ · 422 vs 400 ☐ · 502 vs 503 ☐
-**Web foundations:** REST = resource+endpoint+method+status+JSON ☐ · path param vs query param ☐
-**JSON:** 6 data types ☐ · object vs array ☐ · single-quote invalid ☐ · read a nested value ☐
-**UUID:** stands for / 128-bit 8-4-4-4-12 ☐ · the "4" = version ☐ · why over incrementing IDs ☐
-**Auth:** JWT rides in `Authorization: Bearer` ✓ · signed-not-encrypted ✓ · signature proves tamper-free ✓ · HttpOnly ☐ · OAuth2 one-liner ☐
+**Web foundations:** REST frame ★ (blank on quiz) · path param vs query param ✓
+**JSON:** 6 data types ★ (missed *number*) · object vs array ✓ · viewer tell (numbered vs named) ★ · read a nested value ✓ · path stops at primitive ✓
+**UUID:** 128-bit ✓ · 8-4-4-4-12 layout ★ · the "4" = version ✓ · variant char ★ · IDOR by name ★
+**Auth:** ★★ `Authorization: Bearer` format (BLANK — top priority) · signed-not-encrypted ✓ · ★ signature = integrity+authenticity (said "user logged in") · ★ cookie flags HttpOnly/Secure/SameSite (only recalled Secure) · JWT header contents ★ · session vs JWT trade-off ✓✓ (excellent) · OAuth2 one-liner ☐
+**Status codes ★★ WEAKEST CLUSTER:** 201 ★ · 204 ★ · 400 vs 422 ★ · 409 ★ · 429 ★ · 502 vs 503 ★ · 401 vs 403 ✓✓ · families ✓
+**Methods:** PUT whole / PATCH partial ✓ (locked) · ★ which depends on payload (mis-assigned to PUT twice)
+**Git:** three zones vs three commands ★ · ★ pull = fetch+merge not override · conflict cause ✓ (doubted a correct answer — confidence) · branch creation doesn't move files ★ · in-sync read ✓
+**Stack traces:** 3 steps ✓ · library folder names ✓ (node_modules/site-packages/vendor)
+**Judgment:** 200-with-error-body ✓ · what NOT to report ✓
 **Security findings:** MD5 broken / crackstation ✓ · salt defeats rainbow tables ✓ · why hash-in-JWT-payload is a bug ✓
 **Docker:** `-p HOST:CONTAINER`, app on 3000 ✓ · `docker ps` output ☐
 **Git:** three zones ☐ · fetch vs pull ☐ · what `add` does ☐
