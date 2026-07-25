@@ -23,6 +23,32 @@
 
 ---
 
+## Coverage matrix — company requirements → modules
+
+The employer's actual list (verbatim, translated). Every item must map to a module. This is the "no holes" guarantee — check it whenever scope feels fuzzy.
+
+**Tester:**
+| # | Requirement | Module | Depth |
+|---|-------------|--------|-------|
+| 1 | Writing test scenarios (planning what you'll do — "little technical but required") | **M9** | Solid + hands-on |
+| 2 | Browser debug — analyze network traffic in console, verify behavior | **M6** | Heaviest (biggest daily job) |
+| 3 | Understand HTTP methods & their purpose (GET/POST/PUT/DELETE/PATCH) | **M3** | ✓ Done |
+| 4 | Understand basic HTTP status codes & their purpose | **M4** | Core set |
+| 5 | Make requests directly to an API (e.g. Postman) | **M7** | Heavy + hands-on |
+| 6 | SQL | **Daily** | Everyday habit |
+| 7 | Reading logs | **M11** | Solid |
+
+**PO / testing border:**
+| # | Requirement | Module | Depth |
+|---|-------------|--------|-------|
+| 1 | Writing tasks — bugs (steps to reproduce) + tasks as user stories | **M9** (bugs) + **M10** (stories) | Solid + hands-on |
+| 2 | Basics of HTTP communication + authentication options (so you *really* understand what's happening in the browser history) | **M2** + **M5** | Solid |
+| 3 | JSON / UUID / "those funny elements" — *he asked to treat these as UNKNOWN, teach full theory* | **M2** | Full theory (NOT assumed) |
+
+**Foundation added on top of their bare minimum (his request for "good foundations + a bit more"):** REST as the umbrella concept (M2), git/GitHub + CLI (M1), Docker/env (M0), practical test theory & case-design techniques (M8), Grafana conversational (M12), portfolio + mock interview (MZ). Their list is the *floor*; these make the floor solid and give interview range.
+
+---
+
 ## Prerequisite map (the spine)
 
 ```
@@ -88,11 +114,25 @@ Rule of thumb if time runs short (his priority order): **M6 DevTools > M3/M4 HTT
 
 ---
 
-## M2 — Web/HTTP mental model  ✓ (foundation solid)
+## M2 — Web foundations: REST · request/response · JSON · UUID  ✓ DONE
 **Prereqs:** none.
-**Teach:** client↔server request/response; anatomy of a request (method, path/URL, headers, body) and response (status, headers, body); `Content-Type: application/json`; stateless nature of HTTP (→ motivates auth tokens in M5); JSON structure; what a UUID is (`8-4-4-4-12` hex, globally unique).
-**Status:** Request anatomy ✓. *Confirm JSON + UUID in one quick pass, then move on — he has the technical background.*
-**Quiz bank:** Name the parts of a request. · What does `Content-Type: application/json` tell the server? · What does "HTTP is stateless" mean and why does it force us to send a token on every request?
+
+### 2a — Request/response + REST (◐, request anatomy ✓)
+**Teach:** client↔server; anatomy of a request (method, path/URL, headers, body) and response (status, headers, body); `Content-Type: application/json`; HTTP is **stateless** (→ motivates auth tokens in M5).
+**REST (the umbrella — teach explicitly, it was implicit before):** REST = an architectural style where every "thing" (user, order, product) is a **resource** identified by a **URL/endpoint**, and you act on resources using the standard HTTP **methods** (M3), getting back **status codes** (M4) and **JSON** bodies. This is the frame that connects M3+M4+M5+M7 into one picture: *endpoint + method + body → status + response.* Terms to own: resource, endpoint, path parameter (`/users/42`) vs query parameter (`?sort=name`), payload/body.
+**Status:** request anatomy ✓; REST framing + endpoint/path-vs-query = ☐ to teach.
+
+### 2b — JSON (☐ — TEACH FROM SCRATCH, do not assume)
+**Teach:** JSON = the text format APIs use to send structured data. **Six data types:** 4 primitives — string (double quotes *only*), number (decimal, no quotes), boolean (`true`/`false`), `null`; 2 compound — **object** `{ }` (unordered key–value pairs, keys are quoted strings) and **array** `[ ]` (ordered list, order matters, zero or more values). Nesting: objects in arrays in objects, arbitrarily deep. **Syntax rules that bite:** double quotes not single, no trailing comma, keys always strings. Why testers care: you read JSON response bodies constantly (M6/M7) and assert on specific fields.
+**Hands-on:** read a real Juice Shop JSON response in DevTools; identify each type; point out an object vs an array; find a nested value by path (e.g. `data[0].email`).
+**Exit criteria:** can name the 6 types, tell an object from an array on sight, and read a value out of a nested response.
+**Quiz bank:** 6 JSON types? · object vs array — brackets and meaning? · is `'name'` valid JSON? why not? · in `{"items":[{"id":1}]}`, how do you reference that `1`? · does key order matter? does array order matter?
+
+### 2c — UUID (☐ — TEACH FROM SCRATCH)
+**Teach:** UUID = Universally Unique IDentifier, a **128-bit** ID written as **32 hex characters in 8-4-4-4-12 groups** (e.g. `9b2f... -4a3c-...`). Used as IDs instead of `1,2,3` so IDs are globally unique without a central counter (safer, non-guessable, generatable anywhere). **v4** (the common one) = mostly **random**: format `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` — the **`4`** marks the version, the **`y`** is one of 8/9/A/B (the "variant"). Random = carries no timestamp/machine info. Collisions astronomically unlikely (~5.3×10³⁶ values). Tester angle: spotting a UUID in a URL/response, knowing it's an opaque ID (don't read meaning into it), and that sequential IDs vs UUIDs is a security-relevant design choice (guessable `/user/8` → the IDOR/403 story from M4/M5).
+**Hands-on:** find a UUID in Juice Shop (basket item, product, token id); identify the version digit.
+**Exit criteria:** recognize a UUID on sight, state what the `4` means, explain why apps use them over incrementing integers.
+**Quiz bank:** what does UUID stand for + its shape? · which character tells you the version? · why use a UUID instead of `id=1,2,3`? · does a v4 UUID tell you when it was made?
 
 ---
 
@@ -105,7 +145,7 @@ Rule of thumb if time runs short (his priority order): **M6 DevTools > M3/M4 HTT
 
 ---
 
-## M4 — Status codes (full set)  ◐
+## M4 — Status codes (full set)  ✓ DONE (taught + drilled live in Juice Shop)
 **Prereqs:** M3.
 **Teach:** Families — 2xx success, 3xx redirect, **4xx client's fault, 5xx server's fault**. The ~12 to know cold: 200, 201, 204, 301/302, 400, **401 vs 403**, 404, 409, 422, 429, 500, 502, 503.
 **Hands-on (in M6):** trigger each family on purpose in Juice Shop and read it in Network tab.
@@ -138,7 +178,8 @@ Rule of thumb if time runs short (his priority order): **M6 DevTools > M3/M4 HTT
 ---
 
 ## M7 — Postman / direct API requests  ☐
-**Prereqs:** M3–M6 (recreate in Postman what you saw in DevTools).
+**Prereqs:** M2 (REST/JSON), M3–M6 (recreate in Postman what you saw in DevTools).
+**Frame:** this is REST made concrete — you hit *endpoints* with *methods*, send *JSON* bodies, read *status codes* + *JSON* responses. Everything from M2–M5 converges here.
 **Teach:** Log in via POST, copy token, use as Bearer on authorized endpoints. Build a collection: ≥1 GET, POST, PUT/PATCH, DELETE. Negative tests: no token → 401, malformed body → 400, someone else's resource → 403/404. Environment variables for base URL + token (hygiene interviewers notice). Export collection → repo.
 **Exit criteria:** A saved collection with positive + negative cases, using env vars, exported to the repo.
 **Quiz bank:** Why use an environment variable for the token instead of pasting it? · What negative tests prove auth works? · What status do you *expect* from each negative test?
@@ -217,6 +258,9 @@ Weight toward *last session* + one older callback. Mark ✓ when answered cleanl
 
 **HTTP/methods:** idempotency incl. PATCH-depends-on-payload ✓ · PUT vs PATCH ✓ · double-charge = POST ✓
 **Status codes:** 401 vs 403 (identity/permission) ✓ · 4xx vs 5xx ✓ · 201 vs 204 ☐ · 429 ☐ · 422 vs 400 ☐ · 502 vs 503 ☐
+**Web foundations:** REST = resource+endpoint+method+status+JSON ☐ · path param vs query param ☐
+**JSON:** 6 data types ☐ · object vs array ☐ · single-quote invalid ☐ · read a nested value ☐
+**UUID:** stands for / 128-bit 8-4-4-4-12 ☐ · the "4" = version ☐ · why over incrementing IDs ☐
 **Auth:** JWT rides in `Authorization: Bearer` ✓ · signed-not-encrypted ✓ · signature proves tamper-free ✓ · HttpOnly ☐ · OAuth2 one-liner ☐
 **Security findings:** MD5 broken / crackstation ✓ · salt defeats rainbow tables ✓ · why hash-in-JWT-payload is a bug ✓
 **Docker:** `-p HOST:CONTAINER`, app on 3000 ✓ · `docker ps` output ☐
