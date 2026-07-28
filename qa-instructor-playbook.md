@@ -162,7 +162,7 @@ Rule of thumb if time runs short (his priority order): **M6 DevTools > M3/M4 HTT
 
 ---
 
-## M6 — DevTools (Network / Console / Application)  ☐  ← THE big one
+## M6 — DevTools (Network / Console / Application)  ◐ EXIT CRITERION MET (core move done unaided ×5 features); TODO: throttling, Application-tab recap, POSIX cURL habit  ← THE big one
 **Prereqs:** M3, M4, M5 (you must understand what you're looking at).
 **Teach, all hands-on against Juice Shop, F12:**
 - **Network tab first.** Click around; for each request read method, status, timing. Open one request fully: request headers, payload, response body. Find the JWT in the `Authorization` header after login (connects M5).
@@ -278,7 +278,30 @@ Weight toward *last session* + one older callback. Mark ✓ when answered cleanl
 
 ---
 
-## Suggested 2-week flow (elastic — go at his pace)
+## ▶ REVISED SCHEDULE (set day 4 — ~24–32 hrs left vs ~26 hrs of work; fits with slack)
+
+Time left: 4 days × 3–4 hrs + 2 full weekend days.
+Position is stronger than the raw number: **M6 (biggest module + their top item) is done to exit criteria**, and **M9 is half pre-done** — 14+ findings already logged with evidence, severity and root-cause. Remaining work is lighter per hour (writing/theory, not new hard concepts).
+
+**The real risk is scope discipline, not time.** Security rabbit holes (SQLi, enumeration, CSRF chains) have been valuable but are off the company's list. Stay on-roadmap.
+
+- **Day 4:** finish M7 — negative tests, build collection, env vars, export to repo · SQL 30m
+- **Day 5:** M8 test theory → start M9 scenarios for one feature · SQL
+- **Day 6:** M9 — execute scenarios, write bugs as GitHub Issues with evidence · SQL
+- **Day 7:** M10 user stories + M11 logs · SQL
+- **Weekend 1:** finish M11 · M12 Grafana · assemble portfolio README + all artifacts into repo
+- **Weekend 2:** polish · **full mock interview** · re-drill weak spots (502/501, two-meanings-of-header)
+
+## ★ MZ redefined (his stated goal for spare capacity)
+
+> *"focus being ready for interview and possible questions/scenarios and also ability to just do some stuff on my own independently so if they show me an example of a bug i can spot it."*
+
+So MZ is **two** things, weighted equally:
+
+1. **Interview Q&A reps** — one-breath explanations out loud, behavioural + technical questions, honest grading.
+2. **★ COLD BUG-SPOTTING DRILLS** — Claude presents a raw artifact (a request/response pair, a status+body, a log excerpt, a stack trace, a scenario description) with **no hints**, and he must identify what's wrong, why, severity, and what it should be. This directly rehearses the real interview move ("here's a bug, what do you see?") and the day-one job task. Build a bank of these from real Juice Shop material + invented ones covering: wrong status code, status/body mismatch, missing auth header, IDOR, over-permissive CORS, leaked stack trace, unvalidated input, N+1/duplicate requests, missing exp on a token.
+
+## Original 2-week flow (superseded by the revised schedule above)
 
 - **Days 1–2:** M0 ✓ / M1 git / finish M4 status codes / start SQLBolt. *(M2, M3, most of M5 already done.)*
 - **Days 3–5:** M5 finish auth / **M6 DevTools (spend big here)** / SQLBolt.

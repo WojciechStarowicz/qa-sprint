@@ -1,0 +1,110 @@
+{
+  "info": {
+    "_postman_id": "5dc309a4-2a33-4f9b-aa47-d6eb264cafec",
+    "name": "Juice Shop API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56911594"
+  },
+  "item": [
+    {
+      "name": "http://localhost:8080/api/Users/",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkYXRhIjp7ImlkIjoyNCwidXNlcm5hbWUiOiIiLCJlbWFpbCI6Imp1aWNldGVzdEBtYWlsLmNvbSIsInBhc3N3b3JkIjoiODI3Y2NiMGVlYThhNzA2YzRjMzRhMTY4OTFmODRlN2IiLCJyb2xlIjoiY3VzdG9tZXIiLCJkZWx1eGVUb2tlbiI6IiIsImxhc3RMb2dpbklwIjoiMC4wLjAuMCIsInByb2ZpbGVJbWFnZSI6Ii9hc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHQuc3ZnIiwidG90cFNlY3JldCI6IiIsImlzQWN0aXZlIjp0cnVlLCJjcmVhdGVkQXQiOiIyMDI2LTA3LTI4IDA5OjEzOjMxLjk4MyArMDA6MDAiLCJ1cGRhdGVkQXQiOiIyMDI2LTA3LTI4IDA5OjEzOjMxLjk4MyArMDA6MDAiLCJkZWxldGVkQXQiOm51bGx9LCJiaWQiOjYsImlhdCI6MTc4NTIzMDAyMX0.kz-pSzovfQzcl3m5U3woEqiFLgNMkJJDc8IpaBl0J21IBKjXs3Asiycz3jOLIEx8T3CmIeJb35m0Zn9cOaMQ0u4iXbDRenQaKHIVa79SjUhiR9sSSekDlD4XQhcEOcZAmSYtF31cC-0sDBjQagJNmkyJABmfTCNZtzq6LEN_6KM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"notanemail\",\r\n  \"password\": \"12345\",\r\n  \"passwordRepeat\": \"12345\",\r\n  \"securityQuestion\": {\"id\": 1, \"question\": \"Your eldest siblings middle name?\", \"createdAt\": \"2026-01-01\", \"updatedAt\": \"2026-01-01\"},\r\n  \"securityAnswer\": \"test\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/Users/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "Users",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/rest/user/login",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"juicetest@mail.com\",\"password\":\"12345\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/rest/user/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "rest",
+            "user",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

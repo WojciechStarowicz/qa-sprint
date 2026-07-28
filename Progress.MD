@@ -282,13 +282,187 @@
 
 
 
+\## Day 3 — Status codes RE-TAUGHT from first principles (his request: articulate, don't memorize)
+
+\*\*Method note that worked:\*\* he asked to "reverse-engineer" rather than memorize. Taught the \*\*4xx pipeline\*\* (code = how far you got before failing) and the \*\*5xx location rule\*\* (where in the stack, not who wrote it). Both added to drill-sheet.md.
+
+\*\*Key diagnostic:\*\* on the first scenario round his REASONING was correct every time but numbers attached wrong — on 409 he literally wrote "value is fine but clashing with database" and labelled it 422. \*\*Label-binding problem, not comprehension.\*\* Fix = give a discriminating question, not a definition.
+
+\*\*Now solid ✓ (2nd round)\*\*
+
+\- 400 — "automatic" per his own words, confident
+
+\- 422 vs 409 — the discriminator landed: \*is the value wrong ALONE (422) or only because something else exists (409)?\*
+
+\- 503 maintenance/refusing work · 429 · 201 vs 200 concept · 204
+
+\- 500 when a DB error bubbles up — reasoned it out correctly while doubting himself (confidence gap again)
+
+\*\*Still to re-drill ★\*\*
+
+\- \*\*502 vs 500\*\*: called "load balancer up, all instances dead" a 500. Rule: broken thing IN FRONT of app = 502; app RAN and threw = 500. No app code ran ⇒ can't be 500.
+
+\- \*\*200 vs 201\*\*: said PUT-update returns 201. Test = did something that didn't exist now exist? Update ≠ creation.
+
+\- Kept inventing \*\*501\*\* as a distractor → defined it (Not Implemented) so it stops floating
+
+\- Minor: called 422 "can't be parsed" — it DOES parse, it fails the VALUE check (that's the whole 400/422 split)
+
+\*\*Confidence pattern worth noting:\*\* twice now he's reached a correct answer and then talked himself out of it (merge conflicts, 500-from-DB). Reasoning is more reliable than he believes. Tell him to commit to the answer.
+
+
+
+\## M6 — DevTools (IN PROGRESS)
+
+\- ★★ \*\*\`Authorization: Bearer\` FINALLY SEEN LIVE\*\* after 3 sessions of missing it on recall. Found on \`/rest/basket/...\`. Episodic encoding > flashcards — this is the fix that worked.
+
+\- \*\*Cookie vs Authorization header — the real distinction taught:\*\* cookies are sent AUTOMATICALLY by the browser (no code) ⇒ that's exactly why \*\*CSRF\*\* exists and what \`SameSite\` defends. \`Authorization\` headers must be deliberately attached by JS ⇒ inherently CSRF-resistant (attacker can't make the browser add a header it doesn't know about).
+
+\- Juice Shop is a HYBRID — carries the JWT in BOTH a cookie and the Authorization header.
+
+\- \*\*XHR/Fetch filter\*\* ✓ used. Learned socket.io \`transport=polling\` legitimately IS an XHR (fake live connection over repeated XHR) so it correctly survives the filter → use the free-text \*\*filter box\*\* (\`rest\` / \`api\`) or right-click → Block, to cut noise.
+
+\- Response \*\*Headers\*\* tab vs \*\*Response\*\* (body) tab — he conflated them twice; body is where the payload lives, \`Content-Length\` hints at size.
+
+\- \*\*Applied the 4xx pipeline live and unprompted\*\* to argue NaN should be 400/404, not 200 ✓
+
+\- \*\*Console tab ✓\*\* — read a live Angular TypeError, applied the app-code-vs-framework rule to it (\`main.js:225\` = app; \`chunk-*.js\` = RxJS stream, repeating \`next/_next\` is the tell; \`polyfills.js\` = zone.js runtime)
+
+\- \*\*Minification taught\*\* — variable \`i\` is short because prod builds minify; source maps restore real names, and a team not shipping them is a fair thing to ask about
+
+\- \*\*★ CORE TESTER MOVE COMPLETED END-TO-END (unaided):\*\* UI looks merely "empty" → Network shows malformed request + wrong status → Response body self-contradicts → Console shows the resulting crash → stated user impact. \*This is the M6 exit criterion, hit on the first real attempt.\*
+
+\- TODO in M6: Copy as cURL, Preserve log, throttling, Application tab recap, and repeat the break-it→diagnose drill on other features (login, search, profile)
+
+
+
+\## Solo investigations (M6, mostly unaided) — day 3
+
+\*\*Inv 1 — failed login:\*\* \`POST //rest/user/login\` → \*\*401\*\*, body "Invalid email or password." Prediction (POST, /rest/, 401) MATCHED. Correct behavior, NOT a bug — vague message = deliberate anti-enumeration. \*Taught: "verified correct" is a valid, valuable result.\*
+
+\- \*\*Untangled 4 confusions:\*\* (1) method = only the verb, REST is the style not a method; (2) POST≠201 — 201 only if something CREATED, login just processes → 200; (3) browser route \`/#/login\` (cosmetic, no request) vs API endpoint \`/rest/user/login\` (real HTTP) = two separate URL worlds; (4) path = noun hierarchy general→specific, verb never in the URL.
+
+\- ★ \*\*401 keeps flipping to "authorization"\*\* — REDRILL. Hook that stuck: 401 authe\*N\*tication (who are you) comes before 403 autho\*R\*ization (what may you do), alphabetically AND numerically AND logically. Also: HTTP misnames 401 "Unauthorized" — mentally rename to "Unauthenticated."
+
+\- Skill: find the right request via the \*\*Method column\*\* (scan for POST amid GET noise).
+
+\*\*BUG (low) — double slash on every request\*\* \`//rest/...\`, \`//api/...\`. Base URL ends in / concatenated with path starting / . He guessed "root folder"; corrected. Impact: cache-key splitting, path-prefix rule/WAF bypass risk, log noise, protocol-relative-URL edge case. Report under minor observations. \*Skill shown: pattern-spotting across requests, not per-request.\*
+
+\*\*Inv 2 — registration:\*\*
+
+\- \*\*Botched first attempt\*\* (autofill replaced input) → self-corrected. \*Taught: "inconclusive" ≠ "no bug"; browser autofill/cached session/cookies are test-condition hazards; ALWAYS verify the Request payload — form shows what you think you typed, payload shows what was sent. Use incognito.\*
+
+\- Clean retest (payload verified): \`POST //api/Users\`, duplicate email → \*\*400\*\*, body \`{"message":"Validation error","errors":\[{"field":"email","message":"email must be unique"}]}\`. Pipeline says 409 (valid value, collides w/ existing) but 400 is common/defensible → recognize, DON'T file (like Secure:false).
+
+\- \*\*client-side validation caught \`notanemail\` (no request fired)\*\* → taught: client validation = UX not security, bypassable via Postman/curl → PARK for M7 (send \`notanemail\` straight to API, see if server also validates).
+
+\- \*\*Weak password \`12345\` ACCEPTED\*\* — no complexity/length rule. Finding. (Plaintext pw in body over TLS = normal, NOT a bug — preempted.)
+
+\- \*\*User enumeration (registration) — strong discussion:\*\* "email must be unique" confirms an account exists → build verified user lists from breach dumps, no password needed. Same threat login was hardened against ⇒ \*\*inconsistency\*\* is the real finding. He independently reasoned that a vague message doesn't help (binary outcome still leaks) → correct real-world fix = always-return-success + email out-of-band. Framed it as cost-raising not risk-elimination. Low severity, accepted-industry-issue, but flags nobody thought holistically.
+
+
+
+\## Inv 3 — search (client-side filtering discovery)
+
+\- Learned \*\*304 Not Modified\*\*: conditional GET via ETag → server says "unchanged, use cache", empty body in DevTools (don't mistake for "got nothing"). 3xx family now: 301 perm / 302 temp / 304 use-cache. Disable Cache off→on made 304s→200s (controlled experiment ✓).
+
+\- Learned the Network log only captures while OPEN + \*\*Persist Logs\*\* (Firefox name for Preserve log) — hit the "No requests" empty-log problem, which is literally why the setting exists.
+
+\- Free-text filter box (substring) vs type-filter row (All/HTML/XHR...). \`rest\` in the text box.
+
+\- \*\*Discovery via hypothesis+evidence (well-run):\*\* expanding list 18→54 products fired ZERO new requests; searching \`banana\` after clearing log fired ZERO requests ⇒ \*\*entire catalogue preloaded, search/pagination are CLIENT-SIDE filtering\*\*, not server features. \`/rest/products/search?q=\` only called once on load.
+
+\- \*\*BUG (frontend) — after F5 on a search URL, label says "Search results for apple" but request sends \`q=\` (empty)\*\* — displayed state ≠ real state; term not restored into the API call. Same family as basket NaN.
+
+\- \*\*Finding (perf/design):\*\* \`application-configuration\` fetched 3× on one page load — redundant.
+
+\- \*\*Finding (scale/design):\*\* client-side filtering works at 54 products, collapses at 50k (download/render/memory). + \*\*data-exposure principle: hiding in UI ≠ access control\*\* — whole catalogue is in the browser incl. \`deletedAt\` fields; deleted/hidden products may be one DevTools glance away. TEST LATER: does the preload payload contain non-null \`deletedAt\` items?
+
+\- \*\*SQLi probe:\*\* \`?q='\` → 200 \`{"data":\[]}\`, no DB error → apostrophe handled as literal (parameterized/escaped). Taught: empty result ≠ proven safe; real payloads are \`' OR 1=1--\` not a bare quote; one negative probe doesn't clear an endpoint. (Security testing = beyond junior scope, but good instincts.)
+
+\- \*\*Also note:\*\* Firefox "Edit and Resend" inspector view shows a \`{"GET":{scheme,host,filename,query}}\` shape — that's Firefox describing the request, NOT a server response. Don't confuse them.
+
+\## Inv 4 — POST a feedback form (first POST-with-body drill)
+
+\- POST \`//api/Feedbacks\` → \*\*201 predicted correctly\*\* (response proves creation: new \`id:11\` + \`createdAt\`). First confirmed 201 in the wild.
+
+\- \*\*Read payload → found HIDDEN fields\*\* not in the form: \`captchaId\`, \`captcha:"-3"\`. Client sends both the challenge ID AND the answer ⇒ a CAPTCHA you can read+replay from the request doesn't stop automation. Weak anti-spam. (arithmetic captcha, trivially scriptable.)
+
+\- \*\*Copy as cURL learned\*\* — copied CMD variant (\`^\` escaping, ugly); taught POSIX variant is cleaner for reports. KEY: the copied request had NO token cookie / NO Authorization header ⇒ explains earlier \`UserId:null\` — feedback submitted unauthenticated. \`X-User-Email\` present but that's a client hint, server rightly ignores for attribution. \*This is WHY cURL matters: full replayable request state.\*
+
+\- \*\*Misconception corrected:\*\* typed \`DROP DATABASE\` in comment, nothing happened. Taught: SQL-in-a-text-field is NOT how you test SQLi; injection needs the server to CONCATENATE input into a query. Stored as literal string = safe handling. BUT the comment is saved + later displayed ⇒ real test is stored \*\*XSS\*\* (\`<script>...\`), park next to the descriptions thread.
+
+\- \*\*BUG (he caught unprompted) — wrong CAPTCHA returns 401\*\* — captcha failure is not an authentication failure; should be 400/422. Status misuse, applied the pipeline himself.
+
+\- \*\*M6 EXIT CRITERION MET\*\* — core tester move done end-to-end unaided across basket, login, registration, search, feedback.
+
+
+
+\## SQL — JOINs (started)
+
+\- Self-reported through SELECT/WHERE/aggregates/GROUP BY; at JOINs, theory hazy.
+
+\- \*\*Model taught:\*\* foreign key = pointer between tables; JOIN follows it; \`ON\` says how rows correspond.
+
+\- \*\*INNER vs LEFT ✓ concept\*\* — his "left table = source of truth" instinct correct. INNER = matches on both sides only; LEFT = keep ALL left rows, unmatched right side = \*\*NULL\*\*.
+
+\- \*\*The NULL trick ✓\*\* — \`LEFT JOIN ... WHERE right.id IS NULL\` = "records in A with no counterpart in B" (never-ordered users). INNER can't answer it. Use \`IS NULL\` not \`= NULL\` (nothing equals NULL); test the KEY column not a nullable value column.
+
+\- RIGHT JOIN = LEFT mirrored, rare.
+
+\- \*\*KEY MISS to re-drill: row multiplication.\*\* Predicted INNER=4 (actual 6) and LEFT=6 (actual 8). A join yields one row per matching PAIR — Alice(2 orders)→2 rows, Dan(3)→3 rows. He counts users, not pairs. Reinforce.
+
+\- Predictions on WHICH names/products were all correct; errors were counts + SQL typos (joined users to users; \`users.user\` vs \`users.id\`).
+
+\- \*\*Setup fixed:\*\* blind write→I-run loop too slow. Chose \*\*Local SQLite\*\*. Recommended \*\*DB Browser for SQLite\*\* (GUI, grid view — suits his "can't picture tables from text"). Gave \`sql-practice.sql\` seed (users/products/orders/order_items with deliberate never-ordered users + never-sold product) in the repo. NEXT SQL SESSION: have him run the never-sold-product, per-product SUM, and 3-table join live; re-quiz row multiplication.
+
+
+
+\## Day 4 open — 14-Q recall quiz
+
+\*\*Clean ✓ (9/14):\*\* save≠create/200 (FINALLY solid), 401=authentication, JWT not-encrypted+base64, signature=integrity+authenticity (role:admin example), \*\*all 3 cookie flags + attacks\*\* (HttpOnly→XSS, SameSite→CSRF, Secure→HTTPS — used to be weak, now solid), PATCH idempotency, 422 vs 409, diagnosed own Postman Content-Type error, INNER row-count = 5 (row multiplication ✓).
+
+\*\*Still missing ★:\*\*
+
+\- \*\*502 vs 501 — STILL swapped\*\* (persistent). New hook given: "502 = Bad GATEWAY; gateway = the proxy/LB in front; scenario has load balancer/proxy/backend-down → 502. 501 = Not Implemented = feature not in code." Re-quiz next session.
+
+\- \*\*Two-meanings-of-"header"\*\* (#5) — blank. This is the ROOT of his recurring \`Authorization: Bearer\` fuzziness. Re-explained: HTTP header line (\`Authorization:\`) vs token's internal first segment (header.payload.signature).
+
+\- \*\*\`Authorization: Bearer <token>\` punctuation\*\* — wrote \`Bearer : token\` (extra colon). One colon, belongs to the header name.
+
+\- \*\*Postman attach-token\*\* (#12) — blank though he DID it yesterday: Authorization tab → Bearer Token → paste.
+
+\- #14 JOIN — concept ✓ but aimed at wrong table (orders vs order_items) + should test key column \`oi.id IS NULL\`.
+
+
+
 \## PARKED — bug threads to chase later
+
+\- \*\*Stored XSS\*\*: (a) raw HTML in product descriptions, (b) feedback comments are saved + redisplayed. Test \`<script>alert(1)</script>\` / \`<img src=x onerror=...>\` when we do a security pass. Only render-on-display confirms it.
+
+\- \*\*Deleted-data exposure\*\*: check preloaded products payload for non-null \`deletedAt\`.
+
+\- \*\*client-side validation bypass\*\* (from Inv 2): send \`notanemail\` etc. straight to API in M7 — does the server validate too?
 
 \- \*\*Raw HTML inside product descriptions\*\* (\`<a href=...>\` in /api/Products). If rendered unescaped → injection/XSS vector. Chase in M6/M9.
 
 
 
+\## M7 — Postman (in progress)
+
+\- Built login POST by hand → captured token → attached as Bearer → opened protected endpoint. \*\*Authenticated to an API entirely outside the browser.\*\* (M7 core skill ✓)
+
+\- \*\*Diagnosed own error:\*\* first login 401'd because Body dropdown was on Text not JSON → no \`Content-Type: application/json\` → server couldn't parse creds. Classic Postman mistake, now internalized.
+
+\- \*\*Understood the tool:\*\* Auth tab just AUTO-WRITES the \`Authorization: Bearer\` header (no magic); the "n hidden headers" are Postman auto-adds (Content-Type, Accept, User-Agent: PostmanRuntime, Host, etc). Postman = organized way to send the SAME raw HTTP a browser sends; server can't tell them apart except User-Agent. When to use: browser = observe real-user behavior; Postman = send what the UI won't (missing/malformed/other-user/unsupported-method) to test the SERVER directly.
+
+\- \*\*Negative test 1 — tampered token → 401\*\* ✓ predicted. Signature mismatch (RS256, signed with server's PRIVATE key; attacker can READ payload but can't FORGE a matching signature without the secret). Also noticed: \*\*error came back as HTML not JSON\*\* = minor format-inconsistency finding (JSON clients choke on it). Parked: alg:none / RS256→HS256 JWT bypass class for security pass.
+
 \## Bugs found so far (Juice Shop)
+
+\- \*\*BUG (MED) — No server-side input validation on registration\*\* — \`POST /api/Users\` with \`email:"notanemail"\` → \*\*201 Created\*\*, account id 25, \`Location: /api/Users/25\`. Browser blocks it client-side; server accepts garbage. Weak password \`12345\` also accepted (no complexity rule). Impact: junk accounts + breaks/abuses anything assuming valid emails (reset/verification). \*Proves definitively: client-side validation = UX only; if not enforced server-side it's not enforced. He can now assert this from his own evidence in an interview.\* Also confirmed textbook 201 behavior live: \`Location\` header points at the created resource.
+
+\- \*\*BUG (HIGH/CRITICAL) — IDOR / Broken Access Control on \`GET /rest/basket/{id}\`\*\* — authenticated as user 24 (basket 6), requested \`/rest/basket/1\`, server returned 200 + full contents of user 1's basket (3 products, quantities). \*\*Authentication done, authorization SKIPPED\*\* — no "does this user own this basket?" check. Should be \*\*403\*\*. Combines with sequential integer IDs ⇒ trivially enumerable: \`for i in 1..N: GET /rest/basket/i\` harvests every basket. OWASP Top 10 #1. \*Found by him unaided via Postman — the two-step method: authenticate legitimately, THEN overreach. A broken token would've hidden it behind 401.\*
 
 \- MD5 used for password hashing (crackstation cracked it instantly) — critical
 
@@ -307,6 +481,18 @@
 \- \*\*NOT a bug (judgment practice):\*\* \`Secure: false\` on \`http://localhost\` — Secure means "HTTPS only" and there's no HTTPS locally. Would be a finding in production; reporting it here = noise. \*Taught: knowing what NOT to report protects credibility.\*
 
 \- \*\*ATTACK CHAIN assembled\*\* (ties the whole day together): stored HTML/XSS in product description → script runs in victim browser → reads token from localStorage / non-HttpOnly cookie → exfiltrates → attacker replays token = full account takeover, no password, nothing in failed-login logs. Worse: no \`exp\` = works forever; payload MD5 hash → crack offline → password reuse elsewhere.
+
+\- \*\*BUG (frontend) — basket ID computed as \`NaN\`\*\* — app fires \`GET //rest/basket/NaN\` instead of \`/rest/basket/6\`. Correct id (\`bid: 6\`) is present in the user's own JWT. JS parse/arithmetic failure leaking into a URL. \*Found by him unprompted, purely from reading a request path.\*
+
+\- \*\*BUG (backend) — \`/rest/basket/NaN\` returns \`200 OK\`\*\* with body \`{"status":"success","data":null}\`. Non-numeric ID should be \*\*400\*\* (unparseable param) or \*\*404\*\* (no such basket). \*\*The response contradicts itself 3 ways\*\*: HTTP 200 + body \`status:"success"\` + \`data:null\`. Silent failure — automated clients see 200 and proceed with nothing; no alert, no error log. \*Same "two bugs, different owners" split as the 404/500 pair: fixing the frontend still leaves the backend rubber-stamping garbage from Postman/mobile/attacker.\*
+
+\- \*\*Noticed but NOT over-reported\*\* (judgment ✓): \`Access-Control-Allow-Origin: *\` on a user-data endpoint — real smell, but browsers won't send credentials to a wildcard origin, so less severe than it looks. \`X-Recruiting: /#/jobs\` = harmless easter egg.
+
+\- \*\*Token cookie has neither \`HttpOnly\` nor \`SameSite\`\*\* ⇒ simultaneously stealable via XSS (JS can read it) AND usable via CSRF (auto-attached cross-site). Worst of both worlds in one cookie.
+
+\- \*\*BUG (frontend) — unhandled null crashes basket render\*\* — \`TypeError: can't access property "Products", i is null\` at \`main.js:225\`. Frontend trusts the 200/"success" and dereferences \`data\` without a null check. \*\*Severity HIGH — purchase flow dead\*\* (basket empty, adding items does nothing ⇒ no checkout ⇒ no revenue). He identified the user impact unprompted = severity reasoning ✓
+
+\- \*\*★ THE FULL CAUSAL CHAIN (his first complete end-to-end diagnosis):\*\* frontend sends \`NaN\` → backend rubber-stamps it \`200 {"status":"success","data":null}\` → frontend believes "success" → dereferences null → TypeError → basket dead. \*\*Proves the lying-200 isn't a style nit — it CAUSED the crash.\*\* A 404 would have hit the frontend's error path instead.
 
 \- \*\*Filed as TWO bugs deliberately\*\* — different root causes, different fixes, different owners. Could fix the 404 and still leak traces elsewhere. (Taught: remediation-thinking vs symptom-listing.)
 

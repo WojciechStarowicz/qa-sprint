@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="shop.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="924"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="order_items" custom_title="0" dock_id="1" table="4,11:mainorder_items"/><dock_state state="000000ff00000000fd0000000100000002000002480000020cfc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000002480000011e00ffffff000002480000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="order_items" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="56"/><column index="3" value="69"/><column index="4" value="35"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="orders" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="50"/><column index="3" value="71"/><column index="4" value="87"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="products" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="143"/><column index="3" value="39"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="users" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="47"/><column index="3" value="52"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">-- SQL PRACTICE DATABASE — a tiny shop
+-- HOW TO USE (DB Browser for SQLite):
+--   1. Install &quot;DB Browser for SQLite&quot; from sqlitebrowser.org
+--   2. New Database  → save as  shop.db  (skip the &quot;edit table&quot; popup: Cancel)
+--   3. Tab: &quot;Execute SQL&quot;  → paste this whole file  → press the ▶ (F5) to run it once
+--   4. Tab: &quot;Browse Data&quot;  → pick a table from the dropdown to SEE the rows as a grid
+--   5. Back in &quot;Execute SQL&quot;, write your own queries below the seed and run them
+-- Re-running this file is safe: it drops and rebuilds every table.
+
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id      INTEGER PRIMARY KEY,
+  name    TEXT,
+  country TEXT
+);
+
+CREATE TABLE products (
+  id    INTEGER PRIMARY KEY,
+  name  TEXT,
+  price REAL
+);
+
+CREATE TABLE orders (
+  id      INTEGER PRIMARY KEY,
+  user_id INTEGER,          -- points at users.id  (foreign key)
+  status  TEXT,             -- paid / pending / refunded
+  created TEXT
+);
+
+CREATE TABLE order_items (
+  id         INTEGER PRIMARY KEY,
+  order_id   INTEGER,       -- points at orders.id
+  product_id INTEGER,       -- points at products.id
+  qty        INTEGER
+);
+
+INSERT INTO users VALUES
+ (1,'Alice','UK'),
+ (2,'Bob','US'),
+ (3,'Carol','UK'),   -- never orders
+ (4,'Dan','US'),
+ (5,'Eve','PL');     -- never orders
+
+INSERT INTO products VALUES
+ (10,'Apple Juice',1.99),
+ (11,'Banana Juice',1.99),
+ (12,'Carrot Juice',2.49),
+ (13,'Dragonfruit Juice',9.99),  -- never sold
+ (14,'Elderberry Juice',3.50);
+
+INSERT INTO orders VALUES
+ (101,1,'paid','2026-07-01'),
+ (102,1,'paid','2026-07-03'),
+ (103,2,'refunded','2026-07-05'),
+ (104,4,'paid','2026-07-08'),
+ (105,4,'pending','2026-07-09'),
+ (106,4,'paid','2026-07-10');
+
+INSERT INTO order_items VALUES
+ (1,101,10,2),   -- order 101: 2x Apple
+ (2,101,11,1),   -- order 101: 1x Banana
+ (3,102,10,1),
+ (4,103,12,3),
+ (5,104,10,1),
+ (6,104,14,2),
+ (7,105,11,5),
+ (8,106,12,1);
+-- note: product 13 (Dragonfruit) appears in NO order_items → never sold
+
+-- ============================================================
+-- WRITE YOUR QUERIES BELOW. Some to try (predict, then run):
+-- ============================================================
+
+-- Warm-up: see each table
+-- SELECT * FROM users;
+-- SELECT * FROM orders;
+
+-- INNER vs LEFT (watch the row COUNT change — joins multiply by matches):
+-- SELECT u.name, o.id FROM users u INNER JOIN orders o ON o.user_id = u.id;
+-- SELECT u.name, o.id FROM users u LEFT  JOIN orders o ON o.user_id = u.id;
+
+-- The classic: users who never ordered  (expect Carol, Eve)
+-- SELECT u.name FROM users u
+-- LEFT JOIN orders o ON o.user_id = u.id
+-- WHERE o.id IS NULL;
+
+-- Products never sold  (expect Dragonfruit) — needs the products↔order_items join:
+-- SELECT p.name FROM products p
+-- LEFT JOIN order_items oi ON oi.product_id = p.id
+-- WHERE oi.id IS NULL;
+
+-- Harder (aggregates + join): total quantity sold per product, most-sold first
+-- SELECT p.name, SUM(oi.qty) AS sold
+-- FROM products p
+-- LEFT JOIN order_items oi ON oi.product_id = p.id
+-- GROUP BY p.id
+-- ORDER BY sold DESC;
+
+-- Three-table join: which customer bought which product?
+-- SELECT u.name AS customer, p.name AS product, oi.qty
+-- FROM users u
+-- JOIN orders o       ON o.user_id = u.id
+-- JOIN order_items oi ON oi.order_id = o.id
+-- JOIN products p     ON p.id = oi.product_id;</sql><current_tab id="0"/></tab_sql></sqlb_project>
